@@ -5,7 +5,18 @@
   background-color: var(--gray-150);
   margin-right: 100px;
 }
+/* Add to navbar.css */
+.wallet-option {
+  transition: all 0.2s ease;
+}
 
+.wallet-option:hover {
+  background-color: #f8f9fa !important;
+}
+
+.position-relative {
+  position: relative !important;
+}
 .nav-link {
   color: white;
   letter-spacing: 0.3px;

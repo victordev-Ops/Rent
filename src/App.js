@@ -7,14 +7,12 @@ import Join from "./pages/Join";
 import Loading from "./pages/Header";
 import Partners from "./pages/Partners";
 import Properties from "./pages/Properties";
-import Subscribe from "./pages/Subscribe";
-//import WalletConnect from "./components/navbar/WalletConnect"
+import Subscribe from "./pages/Subscribe"
 function App() {
   return (
     <>
       <BrowserRouter>
         <NavBar />
-        
         <Loading />
         <Partners />
         <Properties />
