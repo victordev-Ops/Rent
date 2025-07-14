@@ -81,8 +81,8 @@ const WalletConnectButton = () => {
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      minHeight: "100h",
-      padding: "20px",
+      minHeight: "50h",
+      padding: "2px",
       fontFamily: "'Inter', sans-serif"
     }}>
       <div style={{ 
