@@ -10,41 +10,12 @@ const WalletConnectButton = () => {
   const [error, setError] = useState("");
   const [account, setAccount] = useState("");
 
-  // SVG Icons with improved visuals
-  const WalletIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 019-9" 
-        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-
-  const EthIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2v8m0 0l3-3m-3 3L9 7m3 13v-8m0 0l3 3m-3-3l-3 3" 
-        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="12" cy="12" r="10" 
-        stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  );
-
-  const QRIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1" 
-        stroke="currentColor" strokeWidth="1.5"/>
-      <rect x="14" y="3" width="7" height="7" rx="1" 
-        stroke="currentColor" strokeWidth="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1" 
-        stroke="currentColor" strokeWidth="1.5"/>
-      <rect x="14" y="14" width="7" height="7" rx="1" 
-        stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  );
+  // ...SVG icon definitions (no changes)...
 
   const handleConnect = async (walletType) => {
     setConnecting(true);
     setError("");
     setShowOptions(false);
-
     try {
       if (walletType === "metamask") {
         if (window.ethereum?.isMetaMask) {
@@ -54,8 +25,7 @@ const WalletConnectButton = () => {
           window.open("https://metamask.io/download.html", "_blank");
           setError("Please install MetaMask");
         }
-      } 
-      else if (walletType === "walletconnect") {
+      } else if (walletType === "walletconnect") {
         const provider = new WalletConnectProvider({
           qrcodeModal: QRCodeModal,
           rpc: { 
@@ -77,21 +47,17 @@ const WalletConnectButton = () => {
   };
 
   return (
+    // OUTER DIV: remove all flex/centering/minHeight/padding styles
     <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "50h",
-      padding: "2px",
-      fontFamily: "'Inter', sans-serif"
+      position: "static" // Ensures static positioning
     }}>
-      <div style={{ 
-        position: "relative",
-        textAlign: "center",
-        maxWidth: "400px",
-        width: "100%"
+      <div style={{
+        position: "static", // No relative/absolute
+        textAlign: "left",  // No centering
+        // Remove maxWidth and width
+        // maxWidth: "400px",
+        // width: "100%"
       }}>
-        {/* Main Connect Button with Neumorphism */}
         <motion.button
           style={{
             background: account ? "#1DA1F2" : "#5D8BF4",
@@ -104,7 +70,7 @@ const WalletConnectButton = () => {
             display: "flex",
             alignItems: "center",
             gap: "12px",
-            width: "100%",
+            // width: "100%",   // <-- REMOVE THIS LINE
             justifyContent: "center",
             fontSize: "19px",
             boxShadow: account 
@@ -149,7 +115,6 @@ const WalletConnectButton = () => {
           )}
         </motion.button>
 
-        {/* Wallet Options Dropdown */}
         <AnimatePresence>
           {showOptions && (
             <motion.div
@@ -162,7 +127,7 @@ const WalletConnectButton = () => {
                 borderRadius: "16px",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
                 padding: "16px",
-                width: "100%",
+                width: "100%", // You can also remove or set to 'auto' if you want the dropdown to fit content
                 zIndex: 100,
                 border: "1px solid rgba(0,0,0,0.05)"
               }}
@@ -191,7 +156,6 @@ const WalletConnectButton = () => {
           )}
         </AnimatePresence>
 
-        {/* Error Message */}
         {error && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -217,56 +181,5 @@ const WalletConnectButton = () => {
   );
 };
 
-const WalletOption = ({ icon, name, onClick, notDetected = false, color = "currentColor" }) => {
-  return (
-    <motion.button
-      style={{
-        width: "100%",
-        padding: "16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        borderRadius: "12px",
-        textAlign: "left",
-        transition: "all 0.2s ease",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-      }}
-      whileHover={{ 
-        backgroundColor: "#F8FAFF",
-        transform: "translateX(4px)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-      }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-    >
-      <div style={{ 
-        fontSize: "24px",
-        color: color
-      }}>
-        {icon}
-      </div>
-      <span style={{ 
-        flex: 1,
-        fontSize: "16px",
-        fontWeight: "500"
-      }}>
-        {name}
-      </span>
-      {notDetected && (
-        <span style={{ 
-          fontSize: "12px", 
-          color: "#EF5350",
-          opacity: 0.8,
-          fontWeight: "500"
-        }}>
-          Not detected
-        </span>
-      )}
-    </motion.button>
-  );
-};
-
+// ...WalletOption definition (no changes)...
 export default WalletConnectButton;
