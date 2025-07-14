@@ -14,7 +14,7 @@ function App() {
     <>
       <BrowserRouter>
         <NavBar />
-        //<WalletConnect/>
+        
         <Loading />
         <Partners />
         <Properties />
