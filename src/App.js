@@ -10,7 +10,7 @@ import Properties from "./pages/Properties";
 import Subscribe from "./pages/Subscribe";
 import WalletConnect from "./components/navbar/WalletConnect"
 function App() {
-  return (
+  returneef (
     <>
       <BrowserRouter>
         <NavBar />
