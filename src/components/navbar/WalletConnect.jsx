@@ -1,185 +1,272 @@
-import React, { useState, useEffect, useCallback } from "react";
-import Web3 from "web3";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import Web3 from "web3";
 
-const SEPOLIA_CHAIN_ID = 11155111;
-const SEPOLIA_PARAMS = {
-  chainId: "0xaa36a7",
-  chainName: "Sepolia Testnet",
-  nativeCurrency: {
-    name: "SepoliaETH",
-    symbol: "ETH",
-    decimals: 18,
-  },
-  rpcUrls: ["https://rpc.sepolia.org"],
-  blockExplorerUrls: ["https://sepolia.etherscan.io"],
-};
-
-const WalletConnect = () => {
-  const [account, setAccount] = useState(null);
-  const [web3, setWeb3] = useState(null);
-  const [balance, setBalance] = useState(null);
+const WalletConnectButton = () => {
   const [connecting, setConnecting] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [error, setError] = useState("");
+  const [account, setAccount] = useState("");
 
-  const buttonStyle = {
-    padding: "14px 24px",
-    minWidth: "200px",
-    background: "linear-gradient(135deg, #3a36e0 0%, #6d67e4 100%)",
-    color: "white",
-    border: "none",
-    borderRadius: "16px",
-    fontFamily: '"Inter", sans-serif',
-    fontWeight: "600",
-    fontSize: "1rem",
-    cursor: "pointer",
-    boxShadow: "0 4px 20px rgba(106, 98, 255, 0.3)",
-    transition: "all 0.3s ease",
-    display: "inline-block",
-  };
+  // SVG Icons with improved visuals
+  const WalletIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 019-9" 
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
 
-  const addressStyle = {
-    fontFamily: "monospace",
-    color: "#3a36e0",
-    fontSize: "0.95rem",
-    cursor: "pointer",
-    marginTop: "8px",
-    wordBreak: "break-word",
-  };
+  const EthIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2v8m0 0l3-3m-3 3L9 7m3 13v-8m0 0l3 3m-3-3l-3 3" 
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="12" cy="12" r="10" 
+        stroke="currentColor" strokeWidth="1.5"/>
+    </svg>
+  );
 
-  const infoBoxStyle = {
-    marginTop: "20px",
-    padding: "12px",
-    backgroundColor: "#f4f4ff",
-    borderRadius: "12px",
-    textAlign: "center",
-    fontSize: "0.95rem",
-    color: "#444",
-  };
+  const QRIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="7" height="7" rx="1" 
+        stroke="currentColor" strokeWidth="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1" 
+        stroke="currentColor" strokeWidth="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1" 
+        stroke="currentColor" strokeWidth="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1" 
+        stroke="currentColor" strokeWidth="1.5"/>
+    </svg>
+  );
 
-  const switchToSepolia = async (provider) => {
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: SEPOLIA_PARAMS.chainId }],
-      });
-    } catch (err) {
-      if (err.code === 4902) {
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [SEPOLIA_PARAMS],
-        });
-      } else {
-        throw err;
-      }
-    }
-  };
-
-  const getBalance = async (_web3, address) => {
-    const wei = await _web3.eth.getBalance(address);
-    const eth = _web3.utils.fromWei(wei, "ether");
-    setBalance(parseFloat(eth).toFixed(4));
-  };
-
-  const connectWallet = useCallback(async () => {
+  const handleConnect = async (walletType) => {
     setConnecting(true);
-    try {
-      let provider;
+    setError("");
+    setShowOptions(false);
 
-      if (window.ethereum) {
-        provider = window.ethereum;
-        await provider.request({ method: "eth_requestAccounts" });
-      } else {
-        provider = new WalletConnectProvider({
-          rpc: { [SEPOLIA_CHAIN_ID]: SEPOLIA_PARAMS.rpcUrls[0] },
-          chainId: SEPOLIA_CHAIN_ID,
+    try {
+      if (walletType === "metamask") {
+        if (window.ethereum?.isMetaMask) {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          setAccount(accounts[0]);
+        } else {
+          window.open("https://metamask.io/download.html", "_blank");
+          setError("Please install MetaMask");
+        }
+      } 
+      else if (walletType === "walletconnect") {
+        const provider = new WalletConnectProvider({
+          qrcodeModal: QRCodeModal,
+          rpc: { 
+            1: "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
+            5: "https://goerli.infura.io/v3/YOUR_INFURA_ID",
+            11155111: "https://sepolia.infura.io/v3/YOUR_INFURA_ID"
+          }
         });
         await provider.enable();
+        const web3 = new Web3(provider);
+        const accounts = await web3.eth.getAccounts();
+        setAccount(accounts[0]);
       }
-
-      await switchToSepolia(provider);
-      const web3Instance = new Web3(provider);
-      const accounts = await web3Instance.eth.getAccounts();
-
-      setWeb3(web3Instance);
-      setAccount(accounts[0]);
-      getBalance(web3Instance, accounts[0]);
-
-      provider.on("accountsChanged", (accs) => {
-        if (accs.length === 0) disconnectWallet();
-        else {
-          setAccount(accs[0]);
-          getBalance(web3Instance, accs[0]);
-        }
-      });
-
-      provider.on("chainChanged", () => window.location.reload());
-      provider.on("disconnect", disconnectWallet);
     } catch (err) {
-      console.error("Connection error:", err);
-      alert("Wallet connection failed.");
+      setError(err.message || "Connection failed");
     } finally {
       setConnecting(false);
     }
-  }, []);
-
-  const disconnectWallet = useCallback(() => {
-    setAccount(null);
-    setWeb3(null);
-    setBalance(null);
-  }, []);
-
-  const copyAddress = () => {
-    if (account) {
-      navigator.clipboard.writeText(account);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
   };
 
-  useEffect(() => {
-    const autoConnect = async () => {
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        const web3Instance = new Web3(window.ethereum);
-        const accounts = await web3Instance.eth.getAccounts();
-        const chainId = await web3Instance.eth.getChainId();
-        if (chainId === SEPOLIA_CHAIN_ID) {
-          setWeb3(web3Instance);
-          setAccount(accounts[0]);
-          getBalance(web3Instance, accounts[0]);
-        }
-      }
-    };
-    autoConnect();
-  }, []);
-
   return (
-    <div style={{ padding: "1rem", textAlign: "center" }}>
-      <button
-        onClick={account ? disconnectWallet : connectWallet}
-        style={buttonStyle}
-      >
-        {account
-          ? `Disconnect (${account.slice(0, 6)}...${account.slice(-4)})`
-          : connecting
-          ? "Connecting..."
-          : "Connect Wallet"}
-      </button>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100h",
+      padding: "20px",
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      <div style={{ 
+        position: "relative",
+        textAlign: "center",
+        maxWidth: "400px",
+        width: "100%"
+      }}>
+        {/* Main Connect Button with Neumorphism */}
+        <motion.button
+          style={{
+            background: account ? "#1DA1F2" : "#5D8BF4",
+            color: "white",
+            border: "none",
+            padding: "16px 32px",
+            borderRadius: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            width: "100%",
+            justifyContent: "center",
+            fontSize: "19px",
+            boxShadow: account 
+              ? "8px 8px 16px blue, -8px -8px 16px black"
+              : "8px 8px 16px black, -8px -8px 16px black",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            marginBottom: "20px"
+          }}
+          whileHover={{ 
+            background: account ? "#43A047" : "#4D7DE0",
+            boxShadow: account
+              ? "4px 4px 8px blue, -4px -4px 8px blue"
+              : "4px 4px 8px blue, -4px -4px 8px blue",
+            y: -2
+          }}
+          whileTap={{ 
+            scale: 0.98,
+            boxShadow: "2px 2px 4px blue, -2px -2px 4px blue"
+          }}
+          onClick={account ? () => setAccount("") : () => setShowOptions(!showOptions)}
+        >
+          {connecting ? (
+            <>
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <WalletIcon />
+              </motion.span>
+              Connecting...
+            </>
+          ) : account ? (
+            <>
+              <EthIcon />
+              {`${account.slice(0, 6)}...${account.slice(-4)}`}
+            </>
+          ) : (
+            <>
+              <WalletIcon />
+              Connect Wallet
+            </>
+          )}
+        </motion.button>
 
-      {account && (
-        <div style={infoBoxStyle}>
-          <p>Wallet Address:</p>
-          <p style={addressStyle} onClick={copyAddress} title="Click to copy">
-            {account}
-          </p>
-          {copied && <span style={{ color: "green" }}>Copied!</span>}
-          <p style={{ marginTop: "10px" }}>
-            Balance: <strong>{balance} ETH</strong>
-          </p>
-        </div>
-      )}
+        {/* Wallet Options Dropdown */}
+        <AnimatePresence>
+          {showOptions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+                padding: "16px",
+                width: "100%",
+                zIndex: 100,
+                border: "1px solid rgba(0,0,0,0.05)"
+              }}
+            >
+              <div style={{ 
+                display: "flex", 
+                flexDirection: "column",
+                gap: "12px"
+              }}>
+                <WalletOption 
+                  icon={<EthIcon />}
+                  name="MetaMask"
+                  onClick={() => handleConnect("metamask")}
+                  notDetected={!window.ethereum?.isMetaMask}
+                  color="#F6851B"
+                />
+                
+                <WalletOption 
+                  icon={<QRIcon />}
+                  name="WalletConnect"
+                  onClick={() => handleConnect("walletconnect")}
+                  color="#3B99FC"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              marginTop: "20px",
+              padding: "16px",
+              background: "#FFEBEE",
+              borderRadius: "12px",
+              color: "#C62828",
+              fontSize: "14px",
+              overflow: "hidden",
+              borderLeft: "4px solid #EF5350",
+              boxShadow: "0 4px 12px rgba(239, 83, 80, 0.15)"
+            }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default WalletConnect;
+const WalletOption = ({ icon, name, onClick, notDetected = false, color = "currentColor" }) => {
+  return (
+    <motion.button
+      style={{
+        width: "100%",
+        padding: "16px",
+        display: "flex",
+        alignItems: "center",
+        gap: "16px",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        borderRadius: "12px",
+        textAlign: "left",
+        transition: "all 0.2s ease",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+      }}
+      whileHover={{ 
+        backgroundColor: "#F8FAFF",
+        transform: "translateX(4px)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+      }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+    >
+      <div style={{ 
+        fontSize: "24px",
+        color: color
+      }}>
+        {icon}
+      </div>
+      <span style={{ 
+        flex: 1,
+        fontSize: "16px",
+        fontWeight: "500"
+      }}>
+        {name}
+      </span>
+      {notDetected && (
+        <span style={{ 
+          fontSize: "12px", 
+          color: "#EF5350",
+          opacity: 0.8,
+          fontWeight: "500"
+        }}>
+          Not detected
+        </span>
+      )}
+    </motion.button>
+  );
+};
+
+export default WalletConnectButton;
