@@ -2,10 +2,9 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import logo from "../../images/logo/logo.png";
-import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./navbar.css";
-import WalletConnectButton from "./WalletConnect.jsx"
+import WalletConnectButton from "./WalletConnect.jsx";
 function NavBar() {
   return (
     <Navbar expand="lg" className="py-3">
