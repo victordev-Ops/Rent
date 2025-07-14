@@ -5,7 +5,7 @@ import logo from "../../images/logo/logo.png";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./navbar.css";
-
+import WalletConnectButton from "./WalletConnect.jsx"
 function NavBar() {
   return (
     <Navbar expand="lg" className="py-3">
@@ -26,12 +26,8 @@ function NavBar() {
         <div className="d-flex align-items-center order">
           <span className="line d-lg-inline-block d-none"></span>
           <i className="fa-regular fa-heart"></i>
-          <Button
-            variant="primary"
-            className="btn-primary d-none d-lg-inline-block"
-          >
-            Connect Wallet
-          </Button>
+          <WalletConnect  variant="primary"
+            className="btn-primary d-none d-lg-inline-block"/>
         </div>
       </Container>
     </Navbar>
