@@ -26,8 +26,7 @@ function NavBar() {
         <div className="d-flex align-items-center order">
           <span className="line d-lg-inline-block d-none"></span>
           <i className="fa-regular fa-heart"></i>
-          <WalletConnect  variant="primary"
-            className="btn-primary d-none d-lg-inline-block"/>
+          <WalletConnectButton/>
         </div>
       </Container>
     </Navbar>
