@@ -58,7 +58,7 @@
     "deploy": "echo 'Deploy script here (e.g., gh-pages or Netlify)'"
   },
   "eslintConfig": {
-    "extends": [
+    "extends": [ 
       "react-app",
       "react-app/jest"
     ]
