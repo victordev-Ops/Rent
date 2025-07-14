@@ -4,7 +4,7 @@ import Navbar from "react-bootstrap/Navbar";
 import logo from "../../images/logo/logo.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./navbar.css";
-import WalletConnect from "./components/navbar/WalletConnect"
+import WalletConnect from "./WalletConnect";
 function NavBar() {
   return (
     <Navbar expand="lg" className="py-3">
